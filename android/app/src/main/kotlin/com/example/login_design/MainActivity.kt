@@ -1,4 +1,4 @@
-package com.example.login_design
+package com.example.catalog_design
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,6 +1,6 @@
 {
-    "name": "login_design",
-    "short_name": "login_design",
+    "name": "catalog_design",
+    "short_name": "catalog_design",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
