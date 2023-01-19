@@ -1,4 +1,4 @@
-# login_design
+# catalog_design
 
 A new Flutter project.
 

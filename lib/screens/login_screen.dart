@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:login_design/providers/login_form_provider.dart';
-import 'package:login_design/ui/input_decoration.dart';
-import 'package:login_design/widgets/widgets.dart';
+import 'package:catalog_design/providers/login_form_provider.dart';
+import 'package:catalog_design/ui/input_decoration.dart';
+import 'package:catalog_design/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatelessWidget {
