@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -13,21 +15,15 @@ class ItemImage extends StatelessWidget {
         decoration: _boxDecoration(),
         width: double.infinity,
         height: 450,
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(45),
-            topRight: Radius.circular(45),
-          ),
-          child: imageURL == null || imageURL == ''?
-            const Image(
-              image: AssetImage('assets/no-image.png'),
-              fit: BoxFit.cover,
-            ) :
-            FadeInImage(
-              placeholder: const AssetImage('assets/jar-loading.gif'), 
-              image: NetworkImage(imageURL!),
-              fit: BoxFit.cover,
+        child: Opacity(
+          opacity: 0.8,
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(45),
+              topRight: Radius.circular(45),
             ),
+            child: getImage(imageURL)
+          ),
         ),
       ),
     );
@@ -47,3 +43,23 @@ class ItemImage extends StatelessWidget {
     ]
   );
 }
+
+  Widget getImage(String? image) {
+    if(image == null) {
+      return const Image(
+        image: AssetImage('assets/no-image.png'),
+        fit: BoxFit.cover,
+      );   
+    }
+
+    if(image.startsWith('http')) {
+      return FadeInImage(
+        placeholder: const AssetImage('assets/jar-loading.gif'), 
+        image: NetworkImage(image),
+        fit: BoxFit.cover,
+      );
+    }
+
+    return Image.file(File(image), fit: BoxFit.cover);
+  }
+

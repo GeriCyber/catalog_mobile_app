@@ -1,3 +1,4 @@
+import 'package:catalog_design/models/modesl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:catalog_design/screens/screens.dart';
@@ -31,7 +32,12 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
-          
+          itemsService.selectedItem = Item(
+            available: true, 
+            name: '', 
+            price: 0
+          );
+          Navigator.pushNamed(context, 'item');
         },
       ),
     );

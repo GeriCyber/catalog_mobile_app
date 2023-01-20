@@ -23,7 +23,7 @@ class ItemCard extends StatelessWidget {
         child: Stack(
           alignment: Alignment.bottomLeft,
           children: [
-            _BackgroundImage(imageURL: item.image!),
+            _BackgroundImage(imageURL: item.image ?? ''),
             _ItemDetails(title: item.name, subtitle: item.id!),
             Positioned(
               top: 0,

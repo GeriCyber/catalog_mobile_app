@@ -2,8 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:catalog_design/services/services.dart';
 import 'package:catalog_design/ui/input_decoration.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/item_form_provider.dart';
 import '../widgets/widgets.dart';
 
 class ItemScreen extends StatelessWidget {
@@ -12,8 +15,29 @@ class ItemScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final itemsService = Provider.of<ItemsService>(context);
+
+    return ChangeNotifierProvider(
+      create: (_) => ItemFormProvider(itemsService.selectedItem!),
+      child: _ItemBodyScreen(itemsService: itemsService),
+    );
+  }
+}
+
+class _ItemBodyScreen extends StatelessWidget {
+  const _ItemBodyScreen({
+    Key? key,
+    required this.itemsService,
+  }) : super(key: key);
+
+  final ItemsService itemsService;
+
+  @override
+  Widget build(BuildContext context) {
+    final itemForm = Provider.of<ItemFormProvider>(context);
+
     return Scaffold(
       body: SingleChildScrollView(
+        // keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: Column(
           children: [
             Stack(
@@ -31,7 +55,19 @@ class ItemScreen extends StatelessWidget {
                   top: 60,
                   right: 20,
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      final picker = ImagePicker();
+                      final XFile ? pickedFile = await picker.pickImage(
+                        source: ImageSource.camera,
+                        imageQuality: 100
+                      );
+                      if(pickedFile == null) {
+                        print('Nothing selected');
+                        return;
+                      }
+                      print(pickedFile.path);
+                      itemsService.updateSelectedProductImage(pickedFile.path);
+                    },
                     icon: const Icon(Icons.camera_alt_rounded, size: 40, color: Colors.white)
                     )
                 ),
@@ -44,8 +80,19 @@ class ItemScreen extends StatelessWidget {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.save_rounded),
-        onPressed: (){},
+        onPressed: itemsService.isSaving ? null : () async {
+          if(!itemForm.isValidForm()) {
+            return;
+          }
+          final String? imageURL = await itemsService.uploadImage();
+          if(imageURL != null) {
+            itemForm.item.image = imageURL;
+          }
+          await itemsService.saveItem(itemForm.item);
+        },
+        child: itemsService.isSaving ? 
+        const CircularProgressIndicator(color: Colors.white) : 
+        const Icon(Icons.save_rounded),
       ),
     );
   }
@@ -58,6 +105,9 @@ class _ItemFormData extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final itemProvider = Provider.of<ItemFormProvider>(context);
+    final item = itemProvider.item;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Container(
@@ -65,10 +115,20 @@ class _ItemFormData extends StatelessWidget {
         width: double.infinity,
         decoration: _formDecoration(),
         child: Form(
+          key: itemProvider.formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             children: [
               const SizedBox(height: 10),
               TextFormField(
+                initialValue: item.name,
+                onChanged: (value) => item.name = value,
+                validator: (value) {
+                  if(value == null || value.isEmpty) {
+                    return 'Name is required';
+                  }
+                  return null;
+                },
                 decoration: InputDecorationStyle.authInputDecoration(
                   hintText: 'Item name', 
                   labelText: 'Name:'
@@ -76,6 +136,13 @@ class _ItemFormData extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               TextFormField(
+                initialValue: '${item.price}',
+                onChanged: (value) {
+                  item.price = double.tryParse(value) == null ? 0 : double.parse(value);
+                },
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^(\d+)?\.?\d{0,2}'))
+                ],
                 keyboardType: TextInputType.number,
                 decoration: InputDecorationStyle.authInputDecoration(
                   hintText: '\$150', 
@@ -84,10 +151,9 @@ class _ItemFormData extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               SwitchListTile.adaptive(
-                value: true, 
-                onChanged: ((value) {
-                  
-                })
+                title: const Text('Available'),
+                value: item.available, 
+                onChanged: itemProvider.changeStatus
               ),
               const SizedBox(height: 30),
             ],
