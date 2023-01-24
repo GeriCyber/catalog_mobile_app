@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import '../models/modesl.dart';
 
@@ -12,6 +13,7 @@ class ItemsService extends ChangeNotifier {
   bool isSaving = false;
   Item? selectedItem;
   File? newImageFile;
+  final storage = FlutterSecureStorage();
 
   ItemsService() {
     loadItems();
@@ -20,7 +22,9 @@ class ItemsService extends ChangeNotifier {
   Future loadItems() async {
     isLoading = true;
     notifyListeners();
-    final url = Uri.https(_baseURL, 'items.json');
+    final url = Uri.https(_baseURL, 'items.json', {
+      'auth': await storage.read(key: 'token') ?? ''
+    });
     final response = await http.get(url);
     final Map<String, dynamic> itemsMap = json.decode(response.body);
     itemsMap.forEach((key, value) {
@@ -49,7 +53,10 @@ class ItemsService extends ChangeNotifier {
   }
 
   Future<String> updateItem(Item item) async {
-    final url = Uri.https(_baseURL, 'items/${item.id}.json');
+    final url = Uri.https(_baseURL, 'items/${item.id}.json', {
+      'auth': await storage.read(key: 'token') ?? ''
+    });
+
     final response = await http.put(url, body: json.encode(item.toMap()));
     final decodedData = response.body;
     final index = items.indexWhere((element) => element.id == item.id);
@@ -59,7 +66,10 @@ class ItemsService extends ChangeNotifier {
   }
   
   Future<String> createItem(Item item) async {
-    final url = Uri.https(_baseURL, 'items.json');
+    final url = Uri.https(_baseURL, 'items.json', {
+      'auth': await storage.read(key: 'token') ?? ''
+    });
+
     final response = await http.post(url, body: json.encode(item.toMap()));
     final decodedData = json.decode(response.body);
     item.id = decodedData['name'];
@@ -93,7 +103,6 @@ class ItemsService extends ChangeNotifier {
       return null;
     }
 
-    print(response.body);
     newImageFile = null;
     final decodedData = json.decode(response.body);
     return decodedData['secure_url'];

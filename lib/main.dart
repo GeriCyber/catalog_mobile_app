@@ -1,4 +1,4 @@
-import 'package:catalog_design/services/items_service.dart';
+import 'package:catalog_design/screens/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:catalog_design/screens/screens.dart';
 import 'package:catalog_design/services/services.dart';
@@ -11,7 +11,8 @@ class AppState extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ItemsService())
+        ChangeNotifierProvider(create: (_) => AuthService()),
+        ChangeNotifierProvider(create: (_) => ItemsService()),
       ],
       child: LoginDesign(),
     );
@@ -24,6 +25,7 @@ class LoginDesign extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: NotificationsService.messengerKey,
       theme: ThemeData.light().copyWith(
         scaffoldBackgroundColor: Colors.grey.shade300,
         appBarTheme: const AppBarTheme(
@@ -37,11 +39,13 @@ class LoginDesign extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       title: 'Catalog Design',
-      initialRoute: 'home',
+      initialRoute: 'login',
       routes: {
         'login': (_) => const LoginScreen(),
+        'register': (_) => const RegisterScreen(),
         'home': (_) => const HomeScreen(),
         'item': (_) => const ItemScreen(),
+        'checking': (_) => const CheckAuthScreen(),
       }
     );
   }
